@@ -7,9 +7,15 @@ var Game = function (i_name) {
 
 	this.register = function () {
 		console.log("Register player: " + name);
-		$.get("http://warships.ondrejkrejcir.cz/register.php", {name: name + "" + new Date().getTime()}, function (data, status) {
-			key = data.key;
-			console.log(key);
+		$.ajax({
+			url: "http://warships.ondrejkrejcir.cz/register.php",
+			data: {name: name + new Date().getTime()},
+			success: function (data, status) {
+				key = data.key;
+				console.log(key);
+			},
+			dataType: "json",
+			timeout: 5000
 		});
 	};
 
@@ -28,11 +34,21 @@ var Game = function (i_name) {
 		}
 		var x = Math.floor(Math.random() * 10);
 		var y = Math.floor(Math.random() * 10);
+    while(playground[x][y]!=null) {
+	   x = Math.floor(Math.random() * 10);
+		 y = Math.floor(Math.random() * 10);
+    }
 		console.log("Shooting at [" + x + "," + y + "]");
 
 		flag = false;
-		$.get("http://warships.ondrejkrejcir.cz/shoot.php", {hash: key, x: x, y: y}, function (data, status) {
-			playground[data.x][data.y] = data.hit;
+		$.ajax({
+			url: "http://warships.ondrejkrejcir.cz/shoot.php",
+			data: {hash: key, x: x, y: y},
+			success: function (data, status) {
+				playground[data.x][data.y] = data.hit;
+			},
+			dataType: "json",
+			timeout: 5000
 		}).always(function () {
 			flag = true;
 		});
@@ -47,11 +63,17 @@ var Game = function (i_name) {
 				}
 			}
 		}
-		if (hits < 4) return;
-		$.get("http://warships.ondrejkrejcir.cz/check.php", {hash: key}, function (data, status) {
-			if (status === "success") {
-				won = true;
-			}
+		if (hits < 15) return;
+		$.ajax({
+			url: "http://warships.ondrejkrejcir.cz/check.php",
+			data: {hash: key},
+			success: function (data, status) {
+				if (status === "success") {
+					won = true;
+				}
+			},
+			dataType: "json",
+			timeout: 5000
 		});
 	};
 
@@ -102,7 +124,7 @@ var Game = function (i_name) {
 };
 
 $(document).ready(function () {
-	var game = new Game("Filip");
+	var game = new Game("{Slaby}");
 	game.register();
 	setInterval(game.turn, 2000);
 });
